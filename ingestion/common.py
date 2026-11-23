@@ -2,6 +2,7 @@ import logging
 import time
 from datetime import datetime
 from pathlib import Path
+import gzip
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -35,6 +36,7 @@ def save_raw(content: bytes, domain: str, source_name: str, fetched_at: datetime
     partition_dir = RAW_ROOT / domain / source_name / f"dt={fetched_at:%Y-%m-%d}"
     partition_dir.mkdir(parents=True, exist_ok=True)
 
-    file_path = partition_dir / f"{source_name}_{fetched_at:%Y%m%dT%H%M%SZ}.json"
-    file_path.write_bytes(content)
+    file_path = partition_dir / f"{source_name}_{fetched_at:%Y%m%dT%H%M%SZ}.json.gz"
+    # file_path.write_bytes(content)
+    file_path.write_bytes(gzip.compress(content, mtime=0))
     return file_path

@@ -22,10 +22,11 @@ def ingest(source: Source, session: requests.Session) -> None:
     file_path = save_raw(response.content, source.domain, source.name, fetched_at)
 
     logger.info(
-        "Source %s: saved %d records (%d bytes) to %s",
+        "Source %s: saved %d records (%d bytes raw, %d bytes stored) to %s",
         source.name,
         record_count,
         len(response.content),
+        file_path.stat().st_size,
         file_path,
     )
 
