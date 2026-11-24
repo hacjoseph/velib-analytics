@@ -1,3 +1,11 @@
+x-ingestion-environment: &ingestion-environment
+  STORAGE_BACKEND: s3
+  S3_ENDPOINT_URL: http://object-storage:9000
+  S3_BUCKET: velib-raw
+  S3_CREATE_BUCKET: "true"
+  AWS_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY}
+  AWS_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_KEY}
+
 services:
   object-storage:
     image: rustfs/rustfs:1.0.0-alpha.83
@@ -15,19 +23,32 @@ services:
       - object-storage-data:/data
     restart: unless-stopped
 
+  # One-off run: docker compose run --rm ingestion [source ...]
   ingestion:
     build: .
     image: velib-ingestion
     depends_on:
       - object-storage
-    environment:
-      STORAGE_BACKEND: s3
-      S3_ENDPOINT_URL: http://object-storage:9000
-      S3_BUCKET: velib-raw
-      S3_CREATE_BUCKET: "true"
-      AWS_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY}
-      AWS_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_KEY}
+    environment: *ingestion-environment
     profiles: ["jobs"]
+
+  # TEMPORARY: runs the ingestion every INTERVAL_SECONDS until Airflow replaces it.
+  ingestion-scheduler:
+    build: .
+    image: velib-ingestion
+    depends_on:
+      - object-storage
+    environment:
+      <<: *ingestion-environment
+      INTERVAL_SECONDS: "1800" # 30 minutes
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          python -m ingestion.main || echo "Run failed, will retry at next tick"
+          sleep "$$INTERVAL_SECONDS"
+        done
+    restart: unless-stopped
 
 volumes:
   object-storage-data:
