@@ -1,33 +1,37 @@
+import gzip
 import logging
 import sys
 from datetime import datetime, timezone
 
 import requests
 
-from ingestion.common import build_session, configure_logging, save_raw
+from ingestion.common import build_object_key, build_session, configure_logging
 from ingestion.sources import SOURCES, Source
+from ingestion.storage import Storage, build_storage
 
 TIMEOUT_SECONDS = 10
 
-logger = logging.getLogger("velib_ingestion")
+logger = logging.getLogger("ingestion")
 
 
-def ingest(source: Source, session: requests.Session) -> None:
+def ingest(source: Source, session: requests.Session, storage: Storage) -> None:
     fetched_at = datetime.now(timezone.utc)
 
     response = session.get(source.url, params=source.params, timeout=TIMEOUT_SECONDS)
     response.raise_for_status()
-
     record_count = source.validate(response.json())
-    file_path = save_raw(response.content, source.domain, source.name, fetched_at)
+
+    body = gzip.compress(response.content, mtime=0)
+    key = build_object_key(source.domain, source.name, fetched_at)
+    location = storage.save(key, body)
 
     logger.info(
         "Source %s: saved %d records (%d bytes raw, %d bytes stored) to %s",
         source.name,
         record_count,
         len(response.content),
-        file_path.stat().st_size,
-        file_path,
+        len(body),
+        location,
     )
 
 
@@ -42,11 +46,17 @@ def main(argv: list[str]) -> int:
         )
         return 2
 
+    try:
+        storage = build_storage()
+    except Exception:
+        logger.exception("Could not initialise storage")
+        return 2
+
     failed: list[str] = []
     with build_session() as session:
         for name in names:
             try:
-                ingest(SOURCES[name], session)
+                ingest(SOURCES[name], session, storage)
             except Exception:
                 logger.exception("Source %s failed", name)
                 failed.append(name)
