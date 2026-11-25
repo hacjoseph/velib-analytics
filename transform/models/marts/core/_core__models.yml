@@ -1,0 +1,32 @@
+models:
+  - name: dim_station
+    description: >
+      Station dimension (SCD type 2), one row per station version.
+      Validity interval is half-open: valid_from <= t < valid_to.
+      The current version has valid_to = 9999-12-31.
+    columns:
+      - name: station_key
+        description: Surrogate key of the station version. Join facts on this key.
+        data_tests:
+          - unique
+          - not_null
+      - name: station_id
+        description: Business key from GBFS.
+        data_tests:
+          - not_null
+          - unique:
+              name: dim_station_one_current_version_per_station
+              config:
+                where: "is_current"
+      - name: atypical_reason
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['zero_capacity', 'special_code_range', 'high_capacity']
+      - name: valid_from
+        data_tests:
+          - not_null
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "valid_from < valid_to"

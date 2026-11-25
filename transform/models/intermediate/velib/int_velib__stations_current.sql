@@ -40,14 +40,7 @@ flagged as (
         current_stations.*,
         current_stations.last_seen_at = latest_snapshot.latest_snapshot_at
             as is_currently_listed,
-        case
-            when capacity = 0
-                then 'zero_capacity'
-            when regexp_matches(station_code, '^6[0-9]{4}$')
-                then 'special_code_range'
-            when capacity > {{ var('atypical_station_capacity_threshold') }}
-                then 'high_capacity'
-        end as atypical_reason
+        {{ station_atypical_reason('station_code', 'capacity') }} as atypical_reason,
     from current_stations
     cross join latest_snapshot
 
