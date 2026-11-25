@@ -12,6 +12,8 @@ analysis-paths: ["analyses"]
 
 target-path: "target"
 clean-targets: ["target", "dbt_packages"]
+vars:
+  atypical_station_capacity_threshold: 150
 
 models:
   velib_analytics:

@@ -1,0 +1,33 @@
+snapshots:
+  - name: snap_velib__stations
+    relation: ref('int_velib__stations_current')
+    description: >
+      SCD type 2 history of Vélib' stations. One row per station version.
+      Only business attributes are tracked; derived flags (is_atypical, ...)
+      are recomputed downstream. dbt_valid_from is the snapshot run time,
+      not the real change time.
+    config:
+      schema: snapshots
+      unique_key: station_id
+      strategy: check
+      check_cols:
+        - station_code
+        - station_name
+        - latitude
+        - longitude
+        - capacity
+        - is_currently_listed
+      hard_deletes: invalidate
+    columns:
+      - name: dbt_scd_id
+        description: Surrogate key of the station version.
+        data_tests:
+          - unique
+          - not_null
+      - name: station_id
+        data_tests:
+          - not_null
+          - unique:
+              name: snap_velib__stations_one_current_version_per_station
+              config:
+                where: "dbt_valid_to is null"

@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: int_velib__stations_current
+    description: >
+      Current station reference, one row per station (latest known version).
+      Atypical stations (special code range, very high or zero capacity) are
+      flagged with a reason, not removed.
+    columns:
+      - name: station_id
+        tests: [unique, not_null]
+      - name: capacity
+        tests: [not_null]
+      - name: is_currently_listed
+        description: True if the station appears in the latest reference snapshot.
+        tests: [not_null]
+      - name: atypical_reason
+        description: >
+          Why the station is atypical (first matching rule):
+          zero_capacity, special_code_range or high_capacity. Null if normal.
+        tests:
+          - accepted_values:
+              values: [zero_capacity, special_code_range, high_capacity]
+      - name: is_atypical
+        tests: [not_null]
+
+  - name: int_velib__station_status_enriched
+    description: >
+      Station status per snapshot, enriched with current capacity and
+      availability indicators. fill_rate uses usable docks
+      (bikes + free docks) as denominator, not nominal capacity.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [source_file, station_id]
+    columns:
+      - name: snapshot_hour
+        tests: [not_null]
+      - name: fill_rate
+        description: Bikes / (bikes + free docks). Null if no usable dock.
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1
+      - name: station_state
+        description: >
+          Exclusive state, first match wins: not_operational, empty, full,
+          available. 0 bikes and 0 free docks is classified as empty.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [not_operational, empty, full, available]
+      - name: num_unavailable_docks
+        description: Capacity minus bikes minus free docks, floored at 0.
