@@ -2,3 +2,7 @@ env/
 data/
 __pycache__/
 .env
+# dbt
+transform/target/
+transform/dbt_packages/
+transform/logs/

@@ -1,0 +1,110 @@
+version: 2
+
+models:
+  - name: stg_velib__station_status
+    description: >
+      Availability of every Velib' station at each ingestion snapshot (every 30 min).
+      Grain: one row per station per snapshot.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [source_file, station_id]
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "num_mechanical_bikes_available + num_ebikes_available = num_bikes_available"
+          config:
+            severity: warn
+    columns:
+      - name: station_id
+        description: Technical station id from GBFS; joins to station_information.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_velib__station_information')
+                field: station_id
+              config:
+                severity: warn
+      - name: station_code
+        description: Public station code shown on the terminal (e.g. "16107").
+        data_tests: [not_null]
+      - name: num_bikes_available
+        description: Bikes available for rent (mechanical + e-bikes).
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: num_mechanical_bikes_available
+        description: Mechanical bikes available.
+      - name: num_ebikes_available
+        description: Electric bikes available.
+      - name: num_docks_available
+        description: Free docks to return a bike.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: is_installed
+        description: Station is physically installed.
+      - name: is_renting
+        description: Station currently allows renting bikes.
+      - name: is_returning
+        description: Station currently accepts returns.
+      - name: snapshot_at
+        description: Ingestion time, parsed from the raw file name (UTC). Use this for time analysis.
+        data_tests: [not_null]
+      - name: last_reported_at
+        description: Last time the station reported its state (UTC). Can lag behind snapshot_at for broken stations.
+      - name: feed_last_updated_at
+        description: Feed-level update time (`lastUpdatedOther`, UTC).
+      - name: source_file
+        description: Raw file this row comes from (lineage).
+      - name: loaded_at
+        description: When the raw file was loaded into DuckDB.
+
+
+  - name: stg_velib__station_information
+    description: >
+      Velib' station referential (name, location, capacity) at each ingestion snapshot.
+      Grain: one row per station per snapshot. History is kept for the SCD2 station dimension.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [source_file, station_id]
+    columns:
+      - name: station_id
+        description: Technical station id from GBFS (primary key within a snapshot).
+        data_tests: [not_null]
+      - name: station_code
+        description: Public station code shown on the terminal.
+        data_tests: [not_null]
+      - name: station_name
+        description: Station name, trimmed.
+        data_tests: [not_null]
+      - name: latitude
+        description: WGS84 latitude.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 48.5, max_value: 49.2}
+      - name: longitude
+        description: WGS84 longitude.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 1.9, max_value: 2.9}
+      - name: capacity
+        description: Total number of docks. Some event stations report abnormal values (200+).
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0}
+      - name: snapshot_at
+        description: Ingestion time, parsed from the raw file name (UTC).
+        data_tests: [not_null]
+      - name: source_file
+        description: Raw file this row comes from (lineage).
+      - name: loaded_at
+        description: When the raw file was loaded into DuckDB.

@@ -1,0 +1,32 @@
+[0m20:44:42.358982 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x72fb31ab17f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x72fb338aca50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x72fb302eb9d0>]}
+
+
+============================== 20:44:42.362358 | e04f00d6-054a-45ba-83fd-9196831daaac ==============================
+[0m20:44:42.362358 [info ] [MainThread]: Running with dbt=1.12.7
+[0m20:44:42.362719 [debug] [MainThread]: running dbt with arguments {'empty': 'False', 'write_json': 'True', 'log_format': 'default', 'fail_fast': 'False', 'static_parser': 'True', 'debug': 'False', 'log_path': 'logs', 'no_print': 'None', 'partial_parse': 'True', 'profiles_dir': '/home/joseph/.dbt', 'target_path': 'None', 'version_check': 'True', 'hints_enabled': 'True', 'introspect': 'True', 'printer_width': '80', 'indirect_selection': 'eager', 'invocation_command': 'dbt build --select stg_velib__station_status', 'use_experimental_parser': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'cache_selected_only': 'False', 'log_cache_events': 'False', 'send_anonymous_usage_stats': 'True', 'use_colors': 'True', 'maximum_seed_size_mib': '1', 'quiet': 'False', 'warn_error': 'None'}
+[0m20:44:42.363048 [error] [MainThread]: [[31mERROR[0m]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path /home/joseph/Perso/Porjets/velib-analytics/dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m20:44:42.364996 [debug] [MainThread]: Resource report: {"command_name": "build", "command_success": false, "command_wall_clock_time": 0.053042002, "process_in_blocks": "69904", "process_kernel_time": 0.104458, "process_mem_max_rss": "119268", "process_out_blocks": "8", "process_user_time": 1.018212}
+[0m20:44:42.365358 [debug] [MainThread]: Command `dbt build` failed at 20:44:42.365293 after 0.05 seconds
+[0m20:44:42.365572 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x72fb304c35c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x72fb3028a7b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x72fb302f3790>]}
+[0m20:44:42.365789 [debug] [MainThread]: Flushing usage events
+[0m20:44:42.755888 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m13:27:17.165364 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7dccd4a917f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7dccd694ca50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7dccd32cb9d0>]}
+
+
+============================== 13:27:17.170130 | 8c80bd0b-eb79-4fd5-b2a7-e4e48df666dc ==============================
+[0m13:27:17.170130 [info ] [MainThread]: Running with dbt=1.12.7
+[0m13:27:17.170792 [debug] [MainThread]: running dbt with arguments {'profiles_dir': '/home/joseph/.dbt', 'no_print': 'None', 'send_anonymous_usage_stats': 'True', 'log_format': 'default', 'indirect_selection': 'eager', 'partial_parse': 'True', 'target_path': 'None', 'fail_fast': 'False', 'warn_error': 'None', 'hints_enabled': 'True', 'maximum_seed_size_mib': '1', 'quiet': 'False', 'static_parser': 'True', 'log_path': 'logs', 'introspect': 'True', 'log_cache_events': 'False', 'printer_width': '80', 'version_check': 'True', 'use_colors': 'True', 'debug': 'False', 'empty': 'None', 'use_experimental_parser': 'False', 'invocation_command': 'dbt show --select stg_velib__station_status --limit 5', 'cache_selected_only': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'write_json': 'True'}
+[0m13:27:17.171337 [error] [MainThread]: [[31mERROR[0m]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path /home/joseph/Perso/Porjets/velib-analytics/dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m13:27:17.172863 [debug] [MainThread]: Resource report: {"command_name": "show", "command_success": false, "command_wall_clock_time": 0.05449873, "process_in_blocks": "59696", "process_kernel_time": 0.096697, "process_mem_max_rss": "119608", "process_out_blocks": "16", "process_user_time": 0.933734}
+[0m13:27:17.173370 [debug] [MainThread]: Command `dbt show` failed at 13:27:17.173257 after 0.06 seconds
+[0m13:27:17.173714 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7dccd34a35c0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7dccd326a7b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7dccd32d3790>]}
+[0m13:27:17.174082 [debug] [MainThread]: Flushing usage events
+[0m13:27:17.579838 [debug] [MainThread]: An error was encountered while trying to flush usage events

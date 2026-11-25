@@ -1,0 +1,39 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Copie des brutes depuis le stockage objet par `loading/main.py`.
+    schema: raw
+    config:
+      loaded_at_field: loaded_at
+      freshness:
+        # Ingestion runs every 30 min: 1 h late is suspicious, 3 h is an incident.
+        warn_after: {count: 1, period: hour}
+        error_after: {count: 3, period: hour}
+
+    tables:
+      - name: station_status
+        description: Real-time state of every Velib' station (GBFS station_status feed).
+        columns: &raw_columns
+          - name: source_file
+            description: Object storage path of the original file (lineage).
+            data_tests:
+              - unique
+              - not_null
+          - name: loaded_at
+            description: When the file was loaded into DuckDB (UTC).
+            data_tests:
+              - not_null
+          - name: payload
+            description: Full JSON document, unmodified.
+            data_tests:
+              - not_null
+
+      - name: station_information
+        description: Station referential (name, coordinates, capacity) — GBFS station_information feed.
+        columns: *raw_columns
+
+      - name: weather_hourly
+        description: Hourly weather in Paris from Open-Meteo (parallel arrays under `hourly`).
+        columns: *raw_columns
