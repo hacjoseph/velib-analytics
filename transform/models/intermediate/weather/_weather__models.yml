@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: int_weather_hourly_deduplicated
+    description: >
+      Hourly weather for Paris, one row per hour. For each hour, keeps the
+      version from the most recent Open-Meteo call (past value when
+      available, otherwise freshest forecast).
+    tests:
+      - dbt_utils.sequential_values:
+          column_name: weather_at
+          interval: 1
+          datepart: hour
+          config: {severity: warn}
+    columns:
+      - name: weather_at
+        description: Hour the values refer to (UTC).
+        tests: [unique, not_null]
+      - name: is_forecast
+        description: True if the selected version is still a forecast.
+        tests: [not_null]
+      - name: selected_snapshot_at
+        description: API call time of the selected version.
+      - name: n_versions
+        description: Number of versions of this hour seen in the staging layer.

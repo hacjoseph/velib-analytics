@@ -1,0 +1,29 @@
+weather_code,weather_label_fr,weather_category,is_precipitation
+0,Ciel dégagé,clear,false
+1,Principalement dégagé,clear,false
+2,Partiellement nuageux,cloudy,false
+3,Couvert,cloudy,false
+45,Brouillard,fog,false
+48,Brouillard givrant,fog,false
+51,Bruine légère,drizzle,true
+53,Bruine modérée,drizzle,true
+55,Bruine dense,drizzle,true
+56,Bruine verglaçante légère,drizzle,true
+57,Bruine verglaçante dense,drizzle,true
+61,Pluie faible,rain,true
+63,Pluie modérée,rain,true
+65,Pluie forte,rain,true
+66,Pluie verglaçante faible,rain,true
+67,Pluie verglaçante forte,rain,true
+71,Neige faible,snow,true
+73,Neige modérée,snow,true
+75,Neige forte,snow,true
+77,Grains de neige,snow,true
+80,Averses de pluie faibles,rain,true
+81,Averses de pluie modérées,rain,true
+82,Averses de pluie violentes,rain,true
+85,Averses de neige faibles,snow,true
+86,Averses de neige fortes,snow,true
+95,Orage,thunderstorm,true
+96,Orage avec grêle faible,thunderstorm,true
+99,Orage avec grêle forte,thunderstorm,true

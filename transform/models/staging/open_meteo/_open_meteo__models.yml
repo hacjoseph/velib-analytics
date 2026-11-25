@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: stg_open_meteo__weather_hourly
+    description: >
+      Hourly weather for Paris from Open-Meteo, one row per source file and
+      per hour. The same hour appears in several files (overlapping 48 h
+      windows); all versions are kept. Past values are model data, not
+      station observations.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [source_file, weather_at]
+    columns:
+      - name: source_file
+        tests: [not_null]
+      - name: snapshot_at
+        description: API call time (UTC), parsed from the file name.
+        tests: [not_null]
+      - name: weather_at
+        description: Hour the values refer to (UTC).
+        tests: [not_null]
+      - name: temperature_c
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -30
+              max_value: 50
+              config: {severity: warn}
+      - name: precipitation_mm
+        description: Precipitation summed over the hour preceding weather_at.
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: wind_speed_kmh
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: weather_code
+        description: WMO weather interpretation code.
+        tests:
+        - relationships:
+            to: ref('wmo_weather_codes')
+            field: weather_code
+      - name: is_forecast
+        description: True when weather_at is after the API call (forecast value).
+      - name: forecast_lead_hours
+        description: Hours between the API call and weather_at (negative = past).

@@ -37,3 +37,9 @@ sources:
       - name: weather_hourly
         description: Hourly weather in Paris from Open-Meteo (parallel arrays under `hourly`).
         columns: *raw_columns
+
+  # Météo
+  - name: open_meteo
+    schema: raw
+    tables:
+      - name: weather_hourly

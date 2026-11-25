@@ -1,0 +1,25 @@
+version: 2
+
+seeds:
+  - name: wmo_weather_codes
+    description: >
+      WMO weather interpretation codes used by Open-Meteo, with a French
+      label for dashboards and a coarse category for analysis.
+    config:
+      schema: seeds
+      column_types:
+        weather_code: integer
+        weather_label_fr: varchar
+        weather_category: varchar
+        is_precipitation: boolean
+    columns:
+      - name: weather_code
+        tests: [unique, not_null]
+      - name: weather_label_fr
+        tests: [not_null]
+      - name: weather_category
+        tests:
+          - accepted_values:
+              values: [clear, cloudy, fog, drizzle, rain, snow, thunderstorm]
+      - name: is_precipitation
+        tests: [not_null]
