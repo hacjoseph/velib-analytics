@@ -30,3 +30,113 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: "valid_from < valid_to"
+
+# Dimeension Date
+  - name: dim_time
+    description: >
+      Hourly time dimension. Key is hour_utc (naive UTC). All other attributes
+      are expressed in Europe/Paris local time. Generated with date_spine,
+      independent from data collection.
+    columns:
+      - name: hour_utc
+        description: Hour start in naive UTC. Join on snapshot_hour / weather_at.
+        data_tests:
+          - unique
+          - not_null
+          - dbt_utils.sequential_values:
+              arguments:
+                interval: 1
+                datepart: hour
+      - name: local_hour
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 23
+      - name: iso_day_of_week
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 7
+      - name: time_slot
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['night', 'morning_peak', 'daytime', 'evening_peak', 'evening']
+
+
+# Dimension Température
+  - name: dim_weather
+    description: >
+      Hourly weather dimension for Paris (Open-Meteo model output, not station
+      measurements). Key weather_at is the hour start in naive UTC.
+      Joined on fact.snapshot_hour, so precipitation_mm is the rain of the hour
+      just before the observation. Includes upcoming forecast hours (is_forecast).
+    columns:
+      - name: weather_at
+        data_tests:
+          - unique
+          - not_null
+      - name: weather_label_fr
+        description: Null would mean a WMO code missing from the seed.
+        data_tests:
+          - not_null
+      - name: temperature_band
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['cold', 'cool', 'mild', 'hot']
+      - name: precipitation_band
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['none', 'light', 'moderate', 'heavy']
+
+  # Table des faits diponibilité
+  - name: fct_station_availability
+    description: >
+      Station availability fact. Grain: one row per station and per status
+      snapshot (about every 30 min). station_key points to the station version
+      valid at snapshot time. weather_at is null when the weather hour is missing.
+      Known limitation: num_unavailable_docks uses the current station capacity.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['station_id', 'snapshot_at']
+    columns:
+      - name: station_key
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+          - relationships:
+              arguments:
+                to: ref('dim_station')
+                field: station_key
+      - name: hour_utc
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_time')
+                field: hour_utc
+      - name: weather_at
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_weather')
+                field: weather_at
+      - name: fill_rate
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: station_state
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['not_operational', 'empty', 'full', 'available']

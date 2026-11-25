@@ -1,0 +1,2 @@
+- Les station considéréd comme anoemales:
+    dbt show --inline "select atypical_reason, station_code, station_name, capacity from {{ ref('dim_station') }} where is_atypical order by atypical_reason, capacity desc" --limit -1
