@@ -5,3 +5,7 @@
     openssl rand -hex 16   # AIRFLOW_DB_PASSWORD
     openssl rand -hex 32   # AIRFLOW_JWT_SECRET
     openssl rand -hex 32   # AIRFLOW_API_SECRET_KEY
+
+# Lancement du loading
+    set -a && source .env && set +a
+    python -m loading.main
