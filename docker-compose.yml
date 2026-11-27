@@ -70,22 +70,22 @@ services:
     profiles: ["jobs"]
 
   # TEMPORARY: runs the ingestion every INTERVAL_SECONDS until Airflow replaces it.
-  ingestion-scheduler:
-    build: .
-    image: velib-ingestion
-    depends_on:
-      - object-storage
-    environment:
-      <<: *ingestion-environment
-      INTERVAL_SECONDS: "1800" # 30 minutes
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        while true; do
-          python -m ingestion.main || echo "Run failed, will retry at next tick"
-          sleep "$$INTERVAL_SECONDS"
-        done
-    restart: unless-stopped
+  # ingestion-scheduler:
+  #   build: .
+  #   image: velib-ingestion
+  #   depends_on:
+  #     - object-storage
+  #   environment:
+  #     <<: *ingestion-environment
+  #     INTERVAL_SECONDS: "1800" # 30 minutes
+  #   entrypoint: ["/bin/sh", "-c"]
+  #   command:
+  #     - |
+  #       while true; do
+  #         python -m ingestion.main || echo "Run failed, will retry at next tick"
+  #         sleep "$$INTERVAL_SECONDS"
+  #       done
+  #   restart: unless-stopped
 
 
   # Airflow sevices

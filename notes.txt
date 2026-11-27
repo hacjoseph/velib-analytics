@@ -9,3 +9,13 @@
 # Lancement du loading
     set -a && source .env && set +a
     python -m loading.main
+
+# Créer le pool (une seule fois : il est stocké dans Postgres)
+    docker compose exec airflow-scheduler \ airflow pools set duckdb_writer 1 "Serializes writes to velib.duckdb (single writer)"
+
+# Arreter le planificateur airflow pour pour travailler manuellement et reprendre.
+    docker compose exec airflow-scheduler airflow dags pause velib_transformation
+    docker compose exec airflow-scheduler airflow dags pause velib_ingestion
+    # ... work on dbt ...
+    docker compose exec airflow-scheduler airflow dags unpause velib_ingestion
+    docker compose exec airflow-scheduler airflow dags unpause velib_transformation
