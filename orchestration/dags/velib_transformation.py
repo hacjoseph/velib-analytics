@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 from airflow.sdk import dag, task
 
-from common.pipeline import run_dbt
+from common.pipeline import run_dbt, run_pipeline_module
 
 DUCKDB_POOL = "duckdb_writer"
 
@@ -43,8 +43,13 @@ def velib_transformation() -> None:
     def dbt_build() -> None:
         """Build seeds, models and snapshots and run all tests."""
         run_dbt(["build"])
+        
+    @task(execution_timeout=timedelta(minutes=10))
+    def publish_marts() -> None:
+        """Copy the tested marts to the Postgres serving database (BI layer)."""
+        run_pipeline_module("serving.main")
 
-    dbt_source_freshness() >> dbt_build()
+    dbt_source_freshness() >> dbt_build() >> publish_marts()
 
 
 velib_transformation()

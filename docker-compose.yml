@@ -32,6 +32,12 @@ x-airflow-common: &airflow-common
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
     DBT_PROFILES_DIR: /opt/velib/transform
     DBT_DUCKDB_PATH: /opt/velib/data/warehouse/velib.duckdb
+
+    ANALYTICS_PG_HOST: ${ANALYTICS_PG_HOST:?missing}
+    ANALYTICS_PG_PORT: ${ANALYTICS_PG_PORT:?missing}
+    ANALYTICS_PG_DATABASE: ${ANALYTICS_PG_DATABASE:?missing}
+    ANALYTICS_PG_USER: ${ANALYTICS_PG_USER:?missing}
+    ANALYTICS_PG_PASSWORD: ${ANALYTICS_WRITER_PASSWORD:?missing}
   volumes:
     - ./orchestration/dags:/opt/airflow/dags
     - ./orchestration/logs:/opt/airflow/logs
@@ -163,6 +169,30 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  analytics-postgres:
+    image: postgres:17-alpine
+    profiles: ["orchestration", "bi"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${ANALYTICS_POSTGRES_PASSWORD:?missing}
+      POSTGRES_DB: analytics
+      # Read by serving/postgres-init/01-init.sh on first start only
+      ANALYTICS_WRITER_PASSWORD: ${ANALYTICS_WRITER_PASSWORD:?missing}
+      METABASE_READER_PASSWORD: ${METABASE_READER_PASSWORD:?missing}
+      METABASE_DB_PASSWORD: ${METABASE_DB_PASSWORD:?missing}
+    volumes:
+      - analytics-postgres-data:/var/lib/postgresql/data
+      - ./serving/postgres-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:${ANALYTICS_PG_HOST_PORT:-5434}:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "analytics"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
 volumes:
   object-storage-data:
   airflow-postgres-data:
+  analytics-postgres-data:

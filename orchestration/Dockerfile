@@ -18,6 +18,12 @@ RUN python -m venv "${VELIB_VENV}" \
         -r /tmp/requirements/transform.txt \
     && rm -rf /tmp/requirements
 
+COPY serving/requirements.txt /tmp/requirements/serving.txt
+# ... in the pip install command, add:
+#        -r /tmp/requirements/serving.txt \
+# ... and after the other COPY lines:
+COPY serving ${VELIB_HOME}/serving
+
 COPY ingestion ${VELIB_HOME}/ingestion
 COPY loading ${VELIB_HOME}/loading
 

@@ -19,3 +19,12 @@
     # ... work on dbt ...
     docker compose exec airflow-scheduler airflow dags unpause velib_ingestion
     docker compose exec airflow-scheduler airflow dags unpause velib_transformation
+
+
+docker compose --profile orchestration up -d --build
+
+# Init script ran: 3 roles and the metabase database exist
+docker compose exec analytics-postgres psql -U postgres -d analytics -c "\du" -c "\l"
+
+# Manual publish (if you get a DuckDB lock error, a load is running: retry a few seconds later)
+docker compose exec -w /opt/velib airflow-scheduler /opt/velib-venv/bin/python -m serving.main
